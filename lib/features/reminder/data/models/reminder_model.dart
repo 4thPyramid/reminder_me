@@ -1,24 +1,24 @@
-import '../../domain/entities/reminder.dart';
+import 'package:hive/hive.dart';
+part 'reminder_model.g.dart';
 
-class ReminderModel extends Reminder {
+@HiveType(typeId: 0)
+class ReminderModel extends HiveObject {
+  @HiveField(0)
+  final String id;
+
+  @HiveField(1)
+  final String url;
+
+  @HiveField(2)
+  final String title;
+
+  @HiveField(3)
+  final DateTime scheduledTime;
+
   ReminderModel({
-    required super.id,
-    required super.url,
-    required super.title,
-    required super.scheduledTime,
+    required this.id,
+    required this.url,
+    required this.title,
+    required this.scheduledTime,
   });
-
-  factory ReminderModel.fromJson(Map<String, dynamic> json) => ReminderModel(
-        id: json['id'],
-        url: json['url'],
-        title: json['title'],
-        scheduledTime: DateTime.parse(json['scheduledTime']),
-      );
-
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'url': url,
-        'title': title,
-        'scheduledTime': scheduledTime.toIso8601String(),
-      };
 }

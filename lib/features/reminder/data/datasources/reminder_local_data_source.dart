@@ -1,3 +1,6 @@
+import 'package:hive/hive.dart' show Box;
+import 'package:hive_flutter/hive_flutter.dart';
+
 import '../models/reminder_model.dart';
 
 abstract class ReminderLocalDataSource {
@@ -7,20 +10,23 @@ abstract class ReminderLocalDataSource {
 }
 
 class ReminderLocalDataSourceImpl implements ReminderLocalDataSource {
-  final List<ReminderModel> _storage = [];
+  final Box<ReminderModel> _reminderBox;
+
+  ReminderLocalDataSourceImpl()
+    : _reminderBox = Hive.box<ReminderModel>('remindersBox');
 
   @override
   Future<void> saveReminder(ReminderModel reminder) async {
-    _storage.add(reminder);
+    await _reminderBox.put(reminder.id, reminder);
   }
 
   @override
   Future<List<ReminderModel>> getAllReminders() async {
-    return _storage;
+    return _reminderBox.values.toList();
   }
 
   @override
   Future<void> deleteReminder(String id) async {
-    _storage.removeWhere((r) => r.id == id);
+    await _reminderBox.delete(id);
   }
 }

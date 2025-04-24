@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
-import 'package:intl/intl.dart' ;  // Add this import
+import 'package:intl/intl.dart'; // Add this import
 import '../../../../core/services/notification_service.dart';
 import '../../domain/entities/reminder.dart';
 
@@ -18,6 +18,10 @@ class _AddReminderPageState extends State<AddReminderPage> {
   DateTime? _selectedDateTime;
 
   @override
+  /*************  ✨ Windsurf Command ⭐  *************/
+  /// Builds the UI for the Add Reminder page, allowing a user to input a
+  /// reminder title, select a date and time, and save the reminder.
+  /*******  88b14dd5-9598-4566-8521-33c4105442dd  *******/
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('Add Reminder')),
@@ -39,10 +43,7 @@ class _AddReminderPageState extends State<AddReminderPage> {
                         : 'Time: ${DateFormat.yMd().add_jm().format(_selectedDateTime!)}',
                   ),
                 ),
-                TextButton(
-                  onPressed: _pickDateTime,
-                  child: Text('Pick Time'),
-                ),
+                TextButton(onPressed: _pickDateTime, child: Text('Pick Time')),
               ],
             ),
             SizedBox(height: 24),
@@ -68,19 +69,30 @@ class _AddReminderPageState extends State<AddReminderPage> {
 
     final time = await showTimePicker(
       context: context,
-      initialTime: TimeOfDay.now().replacing(minute: TimeOfDay.now().minute + 1),
+      initialTime: TimeOfDay.now().replacing(
+        minute: TimeOfDay.now().minute + 1,
+      ),
     );
 
     if (time == null) return;
 
-    final selected = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+    final selected = DateTime(
+      date.year,
+      date.month,
+      date.day,
+      time.hour,
+      time.minute,
+    );
     setState(() {
       _selectedDateTime = selected;
     });
   }
 
   void _saveReminder() {
-    if (_titleController.text.isEmpty || _selectedDateTime == null) return;
+    if (_titleController.text.isEmpty || _selectedDateTime == null) {
+      print('Missing title or date');
+      return;
+    }
 
     final reminder = Reminder(
       id: Uuid().v4(),
@@ -88,6 +100,8 @@ class _AddReminderPageState extends State<AddReminderPage> {
       url: widget.url,
       scheduledTime: _selectedDateTime!,
     );
+
+    print('Scheduling reminder at ${reminder.scheduledTime}');
 
     NotificationService().scheduleNotification(
       id: reminder.id.hashCode,
@@ -97,6 +111,7 @@ class _AddReminderPageState extends State<AddReminderPage> {
       payload: reminder.id,
     );
 
+    print('Reminder saved and notification scheduled.');
     Navigator.pop(context);
   }
 }

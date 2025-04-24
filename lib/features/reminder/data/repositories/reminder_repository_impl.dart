@@ -21,7 +21,16 @@ class ReminderRepositoryImpl implements ReminderRepository {
 
   @override
   Future<List<Reminder>> getReminders() async {
-    return await localDataSource.getAllReminders();
+    return await localDataSource.getAllReminders().then((reminders) {
+      return reminders.map((model) {
+        return Reminder(
+          id: model.id,
+          url: model.url,
+          title: model.title,
+          scheduledTime: model.scheduledTime,
+        );
+      }).toList();
+    });
   }
 
   @override

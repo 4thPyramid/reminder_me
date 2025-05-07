@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
-import 'package:intl/intl.dart'; // Add this import
+import 'package:intl/intl.dart';
 import '../../../../core/services/notification_service.dart';
 import '../../domain/entities/reminder.dart';
+import '../logic/provider.dart'; // Import the provider
 
 class AddReminderPage extends StatefulWidget {
   final String url;
@@ -18,40 +20,135 @@ class _AddReminderPageState extends State<AddReminderPage> {
   DateTime? _selectedDateTime;
 
   @override
-  /*************  ✨ Windsurf Command ⭐  *************/
-  /// Builds the UI for the Add Reminder page, allowing a user to input a
-  /// reminder title, select a date and time, and save the reminder.
-  /*******  88b14dd5-9598-4566-8521-33c4105442dd  *******/
+  void initState() {
+    super.initState();
+    // Use URL domain as initial title suggestion
+    try {
+      final uri = Uri.parse(widget.url);
+      _titleController.text = 'تذكير ${uri.host}';
+    } catch (e) {
+      _titleController.text = 'تذكير جديد';
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Add Reminder')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextFormField(
-              controller: _titleController,
-              decoration: InputDecoration(labelText: 'Reminder Title'),
-            ),
-            SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    _selectedDateTime == null
-                        ? 'No time selected'
-                        : 'Time: ${DateFormat.yMd().add_jm().format(_selectedDateTime!)}',
+      appBar: AppBar(title: Text('إضافة تذكير')),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              const Color(0xFF3E2723).withOpacity(0.9),
+              const Color(0xFF5D4037),
+            ],
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Card(
+                color: const Color(0xFF4E342E),
+                elevation: 4,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'الرابط:',
+                        style: TextStyle(
+                          color: Colors.amberAccent,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        widget.url,
+                        style: const TextStyle(
+                          color: Colors.blue,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                TextButton(onPressed: _pickDateTime, child: Text('Pick Time')),
-              ],
-            ),
-            SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _saveReminder,
-              child: Text('Save Reminder'),
-            ),
-          ],
+              ),
+              const SizedBox(height: 24),
+              TextFormField(
+                controller: _titleController,
+                style: const TextStyle(color: Colors.white),
+                decoration: const InputDecoration(
+                  labelText: 'عنوان التذكير',
+                  labelStyle: TextStyle(color: Colors.amberAccent),
+                  border: OutlineInputBorder(),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.amber, width: 1.0),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Colors.amberAccent,
+                      width: 2.0,
+                    ),
+                  ),
+                  filled: true,
+                  fillColor: Color(0xFF4E342E),
+                  prefixIcon: Icon(Icons.title, color: Colors.amber),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Card(
+                color: const Color(0xFF4E342E),
+                elevation: 4,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.access_time, color: Colors.amber),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Text(
+                          _selectedDateTime == null
+                              ? 'لم يتم اختيار الوقت'
+                              : 'الوقت: ${_formatDateTime(_selectedDateTime!)}',
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      ElevatedButton.icon(
+                        onPressed: _pickDateTime,
+                        icon: const Icon(Icons.calendar_today),
+                        label: const Text('اختر الوقت'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.amber,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const Spacer(),
+              ElevatedButton(
+                onPressed: _saveReminder,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.amber,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: const Text(
+                  'حفظ التذكير',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -63,6 +160,20 @@ class _AddReminderPageState extends State<AddReminderPage> {
       initialDate: DateTime.now().add(Duration(minutes: 1)),
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(Duration(days: 365)),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.dark(
+              primary: Colors.amber,
+              onPrimary: Colors.white,
+              surface: const Color(0xFF3E2723),
+              onSurface: Colors.white,
+            ),
+            dialogBackgroundColor: const Color(0xFF3E2723),
+          ),
+          child: child!,
+        );
+      },
     );
 
     if (date == null) return;
@@ -72,6 +183,20 @@ class _AddReminderPageState extends State<AddReminderPage> {
       initialTime: TimeOfDay.now().replacing(
         minute: TimeOfDay.now().minute + 1,
       ),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.dark(
+              primary: Colors.amber,
+              onPrimary: Colors.white,
+              surface: const Color(0xFF3E2723),
+              onSurface: Colors.white,
+            ),
+            dialogBackgroundColor: const Color(0xFF3E2723),
+          ),
+          child: child!,
+        );
+      },
     );
 
     if (time == null) return;
@@ -90,28 +215,70 @@ class _AddReminderPageState extends State<AddReminderPage> {
 
   void _saveReminder() {
     if (_titleController.text.isEmpty || _selectedDateTime == null) {
-      print('Missing title or date');
+      // Show error dialog
+      showDialog(
+        context: context,
+        builder:
+            (context) => AlertDialog(
+              title: const Text('خطأ'),
+              content: const Text(
+                'يرجى إدخال عنوان التذكير واختيار وقت للتذكير',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('حسنًا'),
+                ),
+              ],
+            ),
+      );
       return;
     }
 
     final reminder = Reminder(
-      id: Uuid().v4(),
+      id: const Uuid().v4(),
       title: _titleController.text,
       url: widget.url,
       scheduledTime: _selectedDateTime!,
     );
 
-    print('Scheduling reminder at ${reminder.scheduledTime}');
-
+    // Schedule the notification
     NotificationService().scheduleNotification(
       id: reminder.id.hashCode,
       title: reminder.title,
-      body: 'Reminder for: ${reminder.url}',
+      body: 'تذكير للرابط: ${reminder.url}',
       scheduledTime: reminder.scheduledTime,
       payload: reminder.id,
     );
 
-    print('Reminder saved and notification scheduled.');
-    Navigator.pop(context);
+    // Save the reminder using the provider
+    final provider = Provider.of<ReminderProvider>(context, listen: false);
+    provider.addReminder(reminder).then((_) {
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'تم حفظ التذكير بنجاح',
+
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      // Go back to home page
+      Navigator.pop(context);
+    });
+  }
+
+  String _formatDateTime(DateTime dateTime) {
+    // Format date and time in Arabic-friendly format
+    return '${dateTime.day}/${dateTime.month}/${dateTime.year} - ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}';
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    super.dispose();
   }
 }

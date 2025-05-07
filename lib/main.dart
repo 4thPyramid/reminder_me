@@ -81,6 +81,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Link Reminder',
       theme: ThemeData(
         scaffoldBackgroundColor: const Color(0xFF3E2723), // Dark brown
